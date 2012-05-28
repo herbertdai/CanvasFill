@@ -1,0 +1,15 @@
+bin/
+gen/
+jni/
+obj/
+.externalToolBuilders/
+
+default.properties
+go.sh
+.classpath
+.project
+
+proguard.cfg
+
+.settings
+getDb.sh
