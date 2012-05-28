@@ -4,7 +4,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <ImageView 
+    <com.howfun.canvasfill.MyCanvas
         android:id="@+id/canvas_view"
         android:layout_width="fill_parent"
         android:layout_height="fill_parent"

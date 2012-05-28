@@ -40,6 +40,7 @@ public class CanvasFillActivity extends Activity {
       int[][] meanArray = GenFillArray(mCanvasBitmap);
 
       printToCanvas(meanArray);
+      
 
    }
 
@@ -56,6 +57,9 @@ public class CanvasFillActivity extends Activity {
          System.out.println();
       }
 
+      /**show in canvas*/
+      MyCanvas canvas = (MyCanvas)findViewById(R.id.canvas_view);
+      canvas.setFillArray(meanArray, outW, outH);
    }
 
    private int[][] GenFillArray(Bitmap bitmap) {
