@@ -1,5 +1,12 @@
 package com.howfun.canvasfill;
 
+/**
+  * Custom view to draw special brushes on.
+  * @author herbertd @ www.adaiw.com (A night programmer)
+  * @time 2012.5.29:12:35AM
+  *
+  */
+
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
