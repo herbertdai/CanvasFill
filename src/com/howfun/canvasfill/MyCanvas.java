@@ -51,7 +51,6 @@ public class MyCanvas extends View {
             for (int j = 0; j < mFillW; j++) {
 
                int curBrush = mFills[i][j];
-               Log.e("", "curBrush =" + curBrush + ", mBrushes.len=" + mBrushes.length); 
                if (curBrush != 0) {
                   canvas.drawBitmap(mBrushes[curBrush - 1], mBrushes[curBrush - 1].getWidth() * j,
                         bitmap1.getHeight() * i, paint);
@@ -61,7 +60,6 @@ public class MyCanvas extends View {
             }
          }
       }
-      canvas.drawBitmap(bitmap1, 0,0, paint);
 
       super.onDraw(canvas);
 

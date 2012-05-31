@@ -8,16 +8,32 @@ package com.howfun.canvasfill;
  */
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
+import android.provider.MediaStore.Images;
 import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 
 public class CanvasFillActivity extends Activity {
 
    private static final int CELL_W = 6;
    private static final int CELL_H = 6;
    private static final String LOG_TAG = "CanvasFillActivity";
+   private static final String TAG = "CavasFill";
+   
+   private static final int REQUEST_IMG_PATH_FROM_CAMERA = 0x11;
+   private static final int REQUEST_IMG_PATH_FROM_LOCAL = 0x10;
+   private static final String TEMP_FILE = "/mnt/sdcard/tempCamera.jpg";
 
    private Bitmap mCanvasBitmap;
    private int outW;
@@ -30,18 +46,31 @@ public class CanvasFillActivity extends Activity {
       setContentView(R.layout.main);
 
       // String path = "/mnt/sdcard/testfill.png";
-      String path = "/mnt/sdcard/bg2011112607.jpg";
+      
+   }
+   
+   private void processImgFile(String path) {
+      
       mCanvasBitmap = BitmapFactory.decodeFile(path);
 
-      outW = mCanvasBitmap.getWidth() / CELL_W + 1;
-      outH = mCanvasBitmap.getHeight() / CELL_H + 1;
+      processBitmap(mCanvasBitmap);
+      
+   }
+
+   private void processBitmap(Bitmap bitmap) {
+      
+      if (bitmap == null) {
+         return;
+      }
+      
+      outW = bitmap.getWidth() / CELL_W + 1;
+      outH = bitmap.getHeight() / CELL_H + 1;
       Log.e(LOG_TAG, "outw outH = " + outW + ", " + outH);
 
-      int[][] meanArray = GenFillArray(mCanvasBitmap);
+      int[][] meanArray = GenFillArray(bitmap);
 
       printToCanvas(meanArray);
       
-
    }
 
    private void printToCanvas(int[][] meanArray) {
@@ -143,5 +172,110 @@ public class CanvasFillActivity extends Activity {
             mCanvasBitmap = null;
          }
       }
+      
+      Utils.deleteFile(TEMP_FILE);
    }
+   
+   private void addImageFromLocal() {
+
+      Intent intent = new Intent();
+      intent.setType("image/*");
+      intent.setAction(Intent.ACTION_GET_CONTENT);
+      startActivityForResult(intent, REQUEST_IMG_PATH_FROM_LOCAL);
+   }
+
+   private void addImageFromCamera() {
+
+      String fileName = TEMP_FILE;
+      ContentValues values = new ContentValues();
+      values.put(Images.Media.TITLE, fileName);
+      values.put("_data", fileName);
+      values.put(Images.Media.PICASA_ID, fileName);
+      values.put(Images.Media.DISPLAY_NAME, fileName);
+      values.put(Images.Media.DESCRIPTION, fileName);
+      values.put(Images.ImageColumns.BUCKET_DISPLAY_NAME, fileName);
+      Uri photoUri = getContentResolver().insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+      Intent i = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+      i.putExtra(MediaStore.EXTRA_OUTPUT, photoUri);
+      startActivityForResult(i, REQUEST_IMG_PATH_FROM_CAMERA);
+   }
+
+   @Override
+   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+      switch (requestCode) {
+      case REQUEST_IMG_PATH_FROM_LOCAL:
+         if (resultCode == RESULT_OK) {
+            String imgPath = "";
+            Uri uri = data.getData();
+            String[] proj = { MediaStore.Images.Media.DATA };
+            Cursor cursor = null;
+            try {
+               cursor = managedQuery(uri, proj, null, null, null);
+            } catch (Exception e) {
+               e.printStackTrace();
+            }
+
+            if (cursor != null) {
+               int column_index = cursor
+                     .getColumnIndexOrThrow(MediaStore.Images.Media.DATA);
+               cursor.moveToFirst();
+               imgPath = cursor.getString(column_index);
+               Utils.log(TAG, "request iamge path from local:" + imgPath);
+               
+               processImgFile(imgPath);
+               
+            } else {
+//               LayoutInflater factory = LayoutInflater.from(CanvasFillActivity.this);
+//               View content = factory.inflate(R.layout.dialog_content, null);
+//
+//               TextView tv = (TextView) content
+//                     .findViewById(R.id.dialog_content_msg);
+//               if (tv != null) {
+//                  tv.setText(R.string.invalid_image);
+//               }
+
+               new AlertDialog.Builder(this).setTitle("Inavlid image")
+                     .setPositiveButton(android.R.string.ok, null).show();
+               Utils.log(TAG, "cursor is null");
+            }
+
+         }
+         break;
+
+      case REQUEST_IMG_PATH_FROM_CAMERA:
+         if (resultCode == RESULT_OK) {
+            processImgFile(TEMP_FILE);
+         }
+         break;
+      default:
+         break;
+      }
+   }
+
+   @Override
+   public boolean onCreateOptionsMenu(Menu menu) {
+      MenuInflater inflater = getMenuInflater();
+      inflater.inflate(R.menu.options, menu);
+      return super.onCreateOptionsMenu(menu);
+   }
+
+   @Override
+   public boolean onOptionsItemSelected(MenuItem item) {
+      super.onOptionsItemSelected(item);
+      switch (item.getItemId()) {
+      case R.id.menu_load_from_local:
+         addImageFromLocal();
+         break;
+
+      case R.id.menu_load_from_camera:
+         addImageFromCamera();
+         break;
+
+      default:
+         break;
+      }
+      return true;
+   }
+
 }
