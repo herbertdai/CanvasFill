@@ -4,10 +4,16 @@
     android:layout_height="fill_parent"
     android:orientation="vertical" >
 
-    <com.howfun.canvasfill.MyCanvas
-        android:id="@+id/canvas_view"
+    <!-- <com.howfun.canvasfill.MyCanvas -->
+    <!-- android:id="@+id/canvas_view" -->
+    <!-- android:layout_width="fill_parent" -->
+    <!-- android:layout_height="fill_parent" -->
+    <!-- /> -->
+
+    <ImageView
+        android:id="@+id/out_img"
         android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        />
+        android:scaleType="centerInside"
+        android:layout_height="fill_parent" />
 
 </LinearLayout>

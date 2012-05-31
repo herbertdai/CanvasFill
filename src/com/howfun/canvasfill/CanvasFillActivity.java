@@ -7,13 +7,23 @@ package com.howfun.canvasfill;
  * @date 2012.5.28
  */
 
+/**
+ * 2012.6.1
+ * TODO: Create output bitmap with loaded file size. Set bitmap size and cell size automatically.
+ * TODO: Fill with custom chars, differs in font size.
+ * TODO: New mode: Imitate desired chars with custom chars.
+ */
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -23,6 +33,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.ImageView;
 
 public class CanvasFillActivity extends Activity {
 
@@ -30,7 +41,7 @@ public class CanvasFillActivity extends Activity {
    private static final int CELL_H = 6;
    private static final String LOG_TAG = "CanvasFillActivity";
    private static final String TAG = "CavasFill";
-   
+
    private static final int REQUEST_IMG_PATH_FROM_CAMERA = 0x11;
    private static final int REQUEST_IMG_PATH_FROM_LOCAL = 0x10;
    private static final String TEMP_FILE = "/mnt/sdcard/tempCamera.jpg";
@@ -39,6 +50,16 @@ public class CanvasFillActivity extends Activity {
    private int outW;
    private int outH;
 
+   private Bitmap bitmap1;
+   private Bitmap bitmap2;
+   private Bitmap bitmap3;
+   private Bitmap bitmap4;
+   private Bitmap bitmap5;
+   private Bitmap bitmap6;
+
+   private Bitmap[] mBrushes;
+   private Paint paint;
+
    /** Called when the activity is first created. */
    @Override
    public void onCreate(Bundle savedInstanceState) {
@@ -46,23 +67,36 @@ public class CanvasFillActivity extends Activity {
       setContentView(R.layout.main);
 
       // String path = "/mnt/sdcard/testfill.png";
-      
+
+      loadBrushes();
    }
-   
+
+   private void loadBrushes() {
+      paint = new Paint();
+      bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.ic1);
+      bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.ic2);
+      bitmap3 = BitmapFactory.decodeResource(getResources(), R.drawable.ic3);
+      bitmap4 = BitmapFactory.decodeResource(getResources(), R.drawable.ic4);
+      bitmap5 = BitmapFactory.decodeResource(getResources(), R.drawable.ic5);
+      bitmap6 = BitmapFactory.decodeResource(getResources(), R.drawable.ic5);
+      mBrushes = new Bitmap[] { bitmap1, bitmap2, bitmap3, bitmap4, bitmap5,
+            bitmap6 };
+   }
+
    private void processImgFile(String path) {
-      
+
       mCanvasBitmap = BitmapFactory.decodeFile(path);
 
       processBitmap(mCanvasBitmap);
-      
+
    }
 
    private void processBitmap(Bitmap bitmap) {
-      
+
       if (bitmap == null) {
          return;
       }
-      
+
       outW = bitmap.getWidth() / CELL_W + 1;
       outH = bitmap.getHeight() / CELL_H + 1;
       Log.e(LOG_TAG, "outw outH = " + outW + ", " + outH);
@@ -70,10 +104,10 @@ public class CanvasFillActivity extends Activity {
       int[][] meanArray = GenFillArray(bitmap);
 
       printToCanvas(meanArray);
-      
+
    }
 
-   private void printToCanvas(int[][] meanArray) {
+   private void printArrayInLog(int[][] meanArray) {
       for (int i = 0; i < outH; i++) {
          for (int j = 0; j < outW; j++) {
             if (meanArray[i][j] != 6)
@@ -86,9 +120,45 @@ public class CanvasFillActivity extends Activity {
          System.out.println();
       }
 
-      /**show in canvas*/
-      MyCanvas canvas = (MyCanvas)findViewById(R.id.canvas_view);
-      canvas.setFillArray(meanArray, outW, outH);
+   }
+
+   private void printToCanvas(int[][] meanArray) {
+
+      // MyCanvas canvas = (MyCanvas)findViewById(R.id.canvas_view);
+      // canvas.setFillArray(meanArray, outW, outH);
+
+      /** show in canvas */
+      Canvas canvas = new Canvas();
+      
+      //createBitmap(String filePath);
+      Bitmap.Config config = Config.RGB_565;
+      int width = 1480; // TODO:calc by real size
+      int height = 2800;
+      Bitmap bitmap = Bitmap.createBitmap(width, height, config);
+      canvas.setBitmap(bitmap);
+
+      // Draw canvas with custom brushes.
+      if (meanArray != null) {
+         for (int i = 0; i < outH; i++) {
+            for (int j = 0; j < outW; j++) {
+
+               int curBrush = meanArray[i][j];
+               if (curBrush != 0) {
+                  canvas.drawBitmap(mBrushes[curBrush - 1],
+                        mBrushes[curBrush - 1].getWidth() * j,
+                        bitmap1.getHeight() * i, paint);
+               } else {
+
+               }
+            }
+         }
+      }
+
+      // Load in View.
+      ImageView img = (ImageView) this.findViewById(R.id.out_img);
+      img.setImageBitmap(bitmap);
+      // Save to file
+
    }
 
    private int[][] GenFillArray(Bitmap bitmap) {
@@ -172,10 +242,10 @@ public class CanvasFillActivity extends Activity {
             mCanvasBitmap = null;
          }
       }
-      
+
       Utils.deleteFile(TEMP_FILE);
    }
-   
+
    private void addImageFromLocal() {
 
       Intent intent = new Intent();
@@ -222,18 +292,19 @@ public class CanvasFillActivity extends Activity {
                cursor.moveToFirst();
                imgPath = cursor.getString(column_index);
                Utils.log(TAG, "request iamge path from local:" + imgPath);
-               
+
                processImgFile(imgPath);
-               
+
             } else {
-//               LayoutInflater factory = LayoutInflater.from(CanvasFillActivity.this);
-//               View content = factory.inflate(R.layout.dialog_content, null);
-//
-//               TextView tv = (TextView) content
-//                     .findViewById(R.id.dialog_content_msg);
-//               if (tv != null) {
-//                  tv.setText(R.string.invalid_image);
-//               }
+               // LayoutInflater factory =
+               // LayoutInflater.from(CanvasFillActivity.this);
+               // View content = factory.inflate(R.layout.dialog_content, null);
+               //
+               // TextView tv = (TextView) content
+               // .findViewById(R.id.dialog_content_msg);
+               // if (tv != null) {
+               // tv.setText(R.string.invalid_image);
+               // }
 
                new AlertDialog.Builder(this).setTitle("Inavlid image")
                      .setPositiveButton(android.R.string.ok, null).show();
