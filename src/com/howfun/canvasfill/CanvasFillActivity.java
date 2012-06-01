@@ -10,6 +10,7 @@ package com.howfun.canvasfill;
 /**
  * 2012.6.1
  * TODO: Create output bitmap with loaded file size. Set bitmap size and cell size automatically.
+ * Output size = raw size / cell size * brush size;
  * TODO: Fill with custom chars, differs in font size.
  * TODO: New mode: Imitate desired chars with custom chars.
  */
@@ -37,8 +38,12 @@ import android.widget.ImageView;
 
 public class CanvasFillActivity extends Activity {
 
-   private static final int CELL_W = 6;
-   private static final int CELL_H = 6;
+   private static final int CELL_W = 12;
+   private static final int CELL_H = 12;
+   
+   private static final int BRUSH_W = 12;
+   private static final int BRUSH_H = 12;
+   
    private static final String LOG_TAG = "CanvasFillActivity";
    private static final String TAG = "CavasFill";
 
@@ -59,6 +64,8 @@ public class CanvasFillActivity extends Activity {
 
    private Bitmap[] mBrushes;
    private Paint paint;
+   private int inputH =400;
+   private int inputW = 400;
 
    /** Called when the activity is first created. */
    @Override
@@ -96,6 +103,8 @@ public class CanvasFillActivity extends Activity {
       if (bitmap == null) {
          return;
       }
+      inputW = bitmap.getWidth();
+      inputH= bitmap.getHeight();
 
       outW = bitmap.getWidth() / CELL_W + 1;
       outH = bitmap.getHeight() / CELL_H + 1;
@@ -124,20 +133,19 @@ public class CanvasFillActivity extends Activity {
 
    private void printToCanvas(int[][] meanArray) {
 
-      // MyCanvas canvas = (MyCanvas)findViewById(R.id.canvas_view);
-      // canvas.setFillArray(meanArray, outW, outH);
-
-      /** show in canvas */
-      Canvas canvas = new Canvas();
       
       //createBitmap(String filePath);
       Bitmap.Config config = Config.RGB_565;
-      int width = 1480; // TODO:calc by real size
-      int height = 2800;
+      int width = inputW / CELL_W * BRUSH_W; 
+      int height = inputH / CELL_H * BRUSH_H;
+      Utils.log(LOG_TAG, "output bitmap w = " + width + "output h = " + height);
+      
       Bitmap bitmap = Bitmap.createBitmap(width, height, config);
+      
+      // Draw canvas with custom brushes.
+      Canvas canvas = new Canvas();
       canvas.setBitmap(bitmap);
 
-      // Draw canvas with custom brushes.
       if (meanArray != null) {
          for (int i = 0; i < outH; i++) {
             for (int j = 0; j < outW; j++) {
