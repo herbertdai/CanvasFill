@@ -10,6 +10,22 @@
     <!-- android:layout_height="fill_parent" -->
     <!-- /> -->
 
+<EditText
+	    android:id="@+id/show_text"
+      android:layout_height="wrap_content"
+      android:layout_width="fill_parent"
+      android:text="I love U forever"
+      android:textSize="60sp"
+      android:textColor="#000"
+      android:hint="Input text to be filled here"
+      />
+<EditText
+    android:id="@+id/brush_text"
+      android:layout_height="wrap_content"
+      android:layout_width="fill_parent"
+      android:hint="Input brush here"
+    />
+
     <ImageView
         android:id="@+id/out_img"
         android:layout_width="fill_parent"

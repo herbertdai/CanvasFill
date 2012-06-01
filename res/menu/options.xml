@@ -6,5 +6,7 @@
 
     <item android:id="@+id/menu_load_from_camera"
         android:title="Load from camera" />
+    <item android:id="@+id/menu_gen_from_text"
+        android:title="Gen from text" />
 
 </menu>

@@ -24,32 +24,35 @@ import android.graphics.Bitmap;
 import android.graphics.Bitmap.Config;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.provider.MediaStore.Images;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 
 public class CanvasFillActivity extends Activity {
 
-   private static final int CELL_W = 12;
-   private static final int CELL_H = 12;
-   
-   private static final int BRUSH_W = 12;
-   private static final int BRUSH_H = 12;
-   
+   private static final int CELL_W = 6;
+   private static final int CELL_H = 6;
+
+   private static final int BRUSH_W = 16;
+   private static final int BRUSH_H = 16;
+
    private static final String LOG_TAG = "CanvasFillActivity";
    private static final String TAG = "CavasFill";
 
    private static final int REQUEST_IMG_PATH_FROM_CAMERA = 0x11;
    private static final int REQUEST_IMG_PATH_FROM_LOCAL = 0x10;
-   private static final String TEMP_FILE = "/mnt/sdcard/tempCamera.jpg";
+   private static final String TEMP_FILE = Utils.ROOT + "tempCamera.jpg";
+   private static final String OUTPUT_FILE = Utils.ROOT + "adaiFill.png";
 
    private Bitmap mCanvasBitmap;
    private int outW;
@@ -64,8 +67,12 @@ public class CanvasFillActivity extends Activity {
 
    private Bitmap[] mBrushes;
    private Paint paint;
-   private int inputH =400;
+   private int inputH = 400;
    private int inputW = 400;
+   private char[] mTextBrushes;
+   private Bitmap mOutputBitmap;
+   private EditText mShowText;
+   private EditText mBrushText;
 
    /** Called when the activity is first created. */
    @Override
@@ -74,20 +81,50 @@ public class CanvasFillActivity extends Activity {
       setContentView(R.layout.main);
 
       // String path = "/mnt/sdcard/testfill.png";
+      findViews();
 
-      loadBrushes();
+      paint = new Paint();
+
+   }
+
+   private void findViews() {
+      // TODO Auto-generated method stub
+      mShowText = (EditText) findViewById(R.id.show_text);
+      mBrushText = (EditText) findViewById(R.id.brush_text);
+
    }
 
    private void loadBrushes() {
-      paint = new Paint();
-      bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.ic1);
-      bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.ic2);
-      bitmap3 = BitmapFactory.decodeResource(getResources(), R.drawable.ic3);
-      bitmap4 = BitmapFactory.decodeResource(getResources(), R.drawable.ic4);
-      bitmap5 = BitmapFactory.decodeResource(getResources(), R.drawable.ic5);
-      bitmap6 = BitmapFactory.decodeResource(getResources(), R.drawable.ic5);
-      mBrushes = new Bitmap[] { bitmap1, bitmap2, bitmap3, bitmap4, bitmap5,
-            bitmap6 };
+      // bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.ic1);
+      // bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.ic2);
+      // bitmap3 = BitmapFactory.decodeResource(getResources(), R.drawable.ic3);
+      // bitmap4 = BitmapFactory.decodeResource(getResources(), R.drawable.ic4);
+      // bitmap5 = BitmapFactory.decodeResource(getResources(), R.drawable.ic5);
+      // bitmap6 = BitmapFactory.decodeResource(getResources(), R.drawable.ic5);
+      // mBrushes = new Bitmap[] { bitmap1, bitmap2, bitmap3, bitmap4, bitmap5,
+      // bitmap6 };
+
+      /** get brush from text */
+      String customText = mBrushText.getText().toString();
+      mTextBrushes = customText.toCharArray();
+
+      for (int i = 0; i < mTextBrushes.length; i++) {
+         char tempStr = mTextBrushes[i];
+         Utils.log(LOG_TAG, "temp str: " + tempStr);
+
+      }
+
+   }
+
+   private void processTextImg() {
+      Bitmap bitmap = Utils.CaptureView(mShowText);
+
+      if (bitmap != null) {
+         mCanvasBitmap = bitmap;
+
+         processBitmap(mCanvasBitmap);
+      }
+
    }
 
    private void processImgFile(String path) {
@@ -104,7 +141,7 @@ public class CanvasFillActivity extends Activity {
          return;
       }
       inputW = bitmap.getWidth();
-      inputH= bitmap.getHeight();
+      inputH = bitmap.getHeight();
 
       outW = bitmap.getWidth() / CELL_W + 1;
       outH = bitmap.getHeight() / CELL_H + 1;
@@ -133,31 +170,38 @@ public class CanvasFillActivity extends Activity {
 
    private void printToCanvas(int[][] meanArray) {
 
-      
-      //createBitmap(String filePath);
+      // createBitmap(String filePath);
       Bitmap.Config config = Config.RGB_565;
-      int width = inputW / CELL_W * BRUSH_W; 
+      int width = inputW / CELL_W * BRUSH_W;
       int height = inputH / CELL_H * BRUSH_H;
       Utils.log(LOG_TAG, "output bitmap w = " + width + "output h = " + height);
-      
-      Bitmap bitmap = Bitmap.createBitmap(width, height, config);
-      
+
+      if (mOutputBitmap != null) {
+         mOutputBitmap.recycle();
+         mOutputBitmap = null;
+      }
+
+      mOutputBitmap = Bitmap.createBitmap(width, height, config);
+
+      Bitmap bitmap = mOutputBitmap;
+
       // Draw canvas with custom brushes.
       Canvas canvas = new Canvas();
       canvas.setBitmap(bitmap);
+
+      paint.setColor(Color.RED);
+      paint.setTextSize(14);
 
       if (meanArray != null) {
          for (int i = 0; i < outH; i++) {
             for (int j = 0; j < outW; j++) {
 
                int curBrush = meanArray[i][j];
-               if (curBrush != 0) {
-                  canvas.drawBitmap(mBrushes[curBrush - 1],
-                        mBrushes[curBrush - 1].getWidth() * j,
-                        bitmap1.getHeight() * i, paint);
-               } else {
-
-               }
+               canvas.drawText(String.valueOf(mTextBrushes[curBrush]), BRUSH_W
+                     * j, BRUSH_H * i, paint);
+               // canvas.drawBitmap(mBrushes[curBrush - 1],
+               // mBrushes[curBrush - 1].getWidth() * j,
+               // bitmap1.getHeight() * i, paint);
             }
          }
       }
@@ -166,6 +210,7 @@ public class CanvasFillActivity extends Activity {
       ImageView img = (ImageView) this.findViewById(R.id.out_img);
       img.setImageBitmap(bitmap);
       // Save to file
+      Utils.saveBitmapToFile(bitmap, OUTPUT_FILE);
 
    }
 
@@ -195,19 +240,19 @@ public class CanvasFillActivity extends Activity {
 
    private int getBrushIndex(int x) {
       if (0 <= x && x <= 41)
-         return 1;
+         return 0;
       if (41 < x && x <= 83)
-         return 2;
+         return 1;
       if (83 < x && x <= 124)
-         return 3;
+         return 2;
       if (124 < x && x <= 165)
-         return 4;
+         return 3;
       if (165 < x && x <= 206)
-         return 5;
+         return 4;
       if (206 < x && x <= 247)
-         return 6;
+         return 5;
       else
-         return 6;
+         return 5;
    }
 
    private void GetGrays(int[] pixels) {
@@ -249,6 +294,11 @@ public class CanvasFillActivity extends Activity {
             mCanvasBitmap.recycle();
             mCanvasBitmap = null;
          }
+      }
+
+      if (mOutputBitmap != null) {
+         mOutputBitmap.recycle();
+         mOutputBitmap = null;
       }
 
       Utils.deleteFile(TEMP_FILE);
@@ -304,16 +354,6 @@ public class CanvasFillActivity extends Activity {
                processImgFile(imgPath);
 
             } else {
-               // LayoutInflater factory =
-               // LayoutInflater.from(CanvasFillActivity.this);
-               // View content = factory.inflate(R.layout.dialog_content, null);
-               //
-               // TextView tv = (TextView) content
-               // .findViewById(R.id.dialog_content_msg);
-               // if (tv != null) {
-               // tv.setText(R.string.invalid_image);
-               // }
-
                new AlertDialog.Builder(this).setTitle("Inavlid image")
                      .setPositiveButton(android.R.string.ok, null).show();
                Utils.log(TAG, "cursor is null");
@@ -351,6 +391,10 @@ public class CanvasFillActivity extends Activity {
          addImageFromCamera();
          break;
 
+      case R.id.menu_gen_from_text:
+         loadBrushes();
+         this.processTextImg();
+         break;
       default:
          break;
       }
