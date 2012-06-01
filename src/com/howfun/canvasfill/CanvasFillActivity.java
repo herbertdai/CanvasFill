@@ -8,11 +8,10 @@ package com.howfun.canvasfill;
  */
 
 /**
- * 2012.6.1
- * TODO: Create output bitmap with loaded file size. Set bitmap size and cell size automatically.
+ * 2012.6.2
  * Output size = raw size / cell size * brush size;
- * TODO: Fill with custom chars, differs in font size.
  * TODO: New mode: Imitate desired chars with custom chars.
+ * TODO: Click generated pic to open.
  */
 
 import android.app.Activity;
@@ -106,6 +105,8 @@ public class CanvasFillActivity extends Activity {
 
       /** get brush from text */
       String customText = mBrushText.getText().toString();
+      if (customText == null || customText.equals(""))
+         customText = "T";
       mTextBrushes = customText.toCharArray();
 
       for (int i = 0; i < mTextBrushes.length; i++) {
@@ -190,15 +191,18 @@ public class CanvasFillActivity extends Activity {
       canvas.setBitmap(bitmap);
 
       paint.setColor(Color.RED);
-      paint.setTextSize(14);
+      paint.setTextSize(BRUSH_H);
 
       if (meanArray != null) {
          for (int i = 0; i < outH; i++) {
             for (int j = 0; j < outW; j++) {
 
                int curBrush = meanArray[i][j];
-               canvas.drawText(String.valueOf(mTextBrushes[curBrush]), BRUSH_W
+               if (curBrush !=5) {
+                  curBrush %= mTextBrushes.length;
+                  canvas.drawText(String.valueOf(mTextBrushes[curBrush]), BRUSH_W
                      * j, BRUSH_H * i, paint);
+               }
                // canvas.drawBitmap(mBrushes[curBrush - 1],
                // mBrushes[curBrush - 1].getWidth() * j,
                // bitmap1.getHeight() * i, paint);

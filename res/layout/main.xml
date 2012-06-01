@@ -18,12 +18,14 @@
       android:textSize="60sp"
       android:textColor="#000"
       android:hint="Input text to be filled here"
+      android:background="@drawable/white"
       />
 <EditText
     android:id="@+id/brush_text"
       android:layout_height="wrap_content"
       android:layout_width="fill_parent"
       android:hint="Input brush here"
+      android:maxLength="5"
     />
 
     <ImageView
