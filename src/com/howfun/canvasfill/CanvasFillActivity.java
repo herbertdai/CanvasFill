@@ -33,9 +33,11 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.TextView;
 
 public class CanvasFillActivity extends Activity {
 
@@ -57,14 +59,6 @@ public class CanvasFillActivity extends Activity {
    private int outW;
    private int outH;
 
-   private Bitmap bitmap1;
-   private Bitmap bitmap2;
-   private Bitmap bitmap3;
-   private Bitmap bitmap4;
-   private Bitmap bitmap5;
-   private Bitmap bitmap6;
-
-   private Bitmap[] mBrushes;
    private Paint paint;
    private int inputH = 400;
    private int inputW = 400;
@@ -72,6 +66,8 @@ public class CanvasFillActivity extends Activity {
    private Bitmap mOutputBitmap;
    private EditText mShowText;
    private EditText mBrushText;
+   private ImageView mOutputImg;
+   private Button mGenBtn;
 
    /** Called when the activity is first created. */
    @Override
@@ -79,29 +75,47 @@ public class CanvasFillActivity extends Activity {
       super.onCreate(savedInstanceState);
       setContentView(R.layout.main);
 
-      // String path = "/mnt/sdcard/testfill.png";
       findViews();
-
       paint = new Paint();
 
    }
 
    private void findViews() {
-      // TODO Auto-generated method stub
       mShowText = (EditText) findViewById(R.id.show_text);
       mBrushText = (EditText) findViewById(R.id.brush_text);
+      mOutputImg = (ImageView) this.findViewById(R.id.out_img);
+      mGenBtn = (Button) findViewById(R.id.gen_btn);
+
+      setOnClickListener();
+
+   }
+
+   private void setOnClickListener() {
+      mOutputImg.setOnClickListener(new OnClickListener() {
+
+         @Override
+         public void onClick(View v) {
+            Intent i = Utils.getImageFileIntent(OUTPUT_FILE);
+            if (i != null) {
+               startActivity(i);
+            }
+         }
+
+      });
+
+      mGenBtn.setOnClickListener(new OnClickListener() {
+
+         @Override
+         public void onClick(View v) {
+            loadBrushes();
+            processTextImg();
+         }
+
+      });
 
    }
 
    private void loadBrushes() {
-      // bitmap1 = BitmapFactory.decodeResource(getResources(), R.drawable.ic1);
-      // bitmap2 = BitmapFactory.decodeResource(getResources(), R.drawable.ic2);
-      // bitmap3 = BitmapFactory.decodeResource(getResources(), R.drawable.ic3);
-      // bitmap4 = BitmapFactory.decodeResource(getResources(), R.drawable.ic4);
-      // bitmap5 = BitmapFactory.decodeResource(getResources(), R.drawable.ic5);
-      // bitmap6 = BitmapFactory.decodeResource(getResources(), R.drawable.ic5);
-      // mBrushes = new Bitmap[] { bitmap1, bitmap2, bitmap3, bitmap4, bitmap5,
-      // bitmap6 };
 
       /** get brush from text */
       String customText = mBrushText.getText().toString();
@@ -122,7 +136,6 @@ public class CanvasFillActivity extends Activity {
 
       if (bitmap != null) {
          mCanvasBitmap = bitmap;
-
          processBitmap(mCanvasBitmap);
       }
 
@@ -131,7 +144,6 @@ public class CanvasFillActivity extends Activity {
    private void processImgFile(String path) {
 
       mCanvasBitmap = BitmapFactory.decodeFile(path);
-
       processBitmap(mCanvasBitmap);
 
    }
@@ -171,7 +183,6 @@ public class CanvasFillActivity extends Activity {
 
    private void printToCanvas(int[][] meanArray) {
 
-      // createBitmap(String filePath);
       Bitmap.Config config = Config.RGB_565;
       int width = inputW / CELL_W * BRUSH_W;
       int height = inputH / CELL_H * BRUSH_H;
@@ -198,21 +209,17 @@ public class CanvasFillActivity extends Activity {
             for (int j = 0; j < outW; j++) {
 
                int curBrush = meanArray[i][j];
-               if (curBrush !=5) {
+               if (curBrush != 5) {
                   curBrush %= mTextBrushes.length;
-                  canvas.drawText(String.valueOf(mTextBrushes[curBrush]), BRUSH_W
-                     * j, BRUSH_H * i, paint);
+                  canvas.drawText(String.valueOf(mTextBrushes[curBrush]),
+                        BRUSH_W * j, BRUSH_H * i, paint);
                }
-               // canvas.drawBitmap(mBrushes[curBrush - 1],
-               // mBrushes[curBrush - 1].getWidth() * j,
-               // bitmap1.getHeight() * i, paint);
             }
          }
       }
 
       // Load in View.
-      ImageView img = (ImageView) this.findViewById(R.id.out_img);
-      img.setImageBitmap(bitmap);
+      mOutputImg.setImageBitmap(bitmap);
       // Save to file
       Utils.saveBitmapToFile(bitmap, OUTPUT_FILE);
 
@@ -228,11 +235,15 @@ public class CanvasFillActivity extends Activity {
             int[] pixels = new int[CELL_W * CELL_H];
             bitmap.getPixels(pixels, 0, CELL_W, j * CELL_W, i * CELL_H, CELL_W,
                   CELL_H);
+
             GetGrays(pixels);
+
             // Get mean
             int mean = getMean(pixels);
+
             // Get brush index
             int brushIndex = getBrushIndex(mean);
+
             // Put into OutputArray
             out[i][j] = brushIndex;
          }
@@ -305,7 +316,7 @@ public class CanvasFillActivity extends Activity {
          mOutputBitmap = null;
       }
 
-      Utils.deleteFile(TEMP_FILE);
+      // Utils.deleteFile(TEMP_FILE);
    }
 
    private void addImageFromLocal() {
@@ -387,17 +398,17 @@ public class CanvasFillActivity extends Activity {
    public boolean onOptionsItemSelected(MenuItem item) {
       super.onOptionsItemSelected(item);
       switch (item.getItemId()) {
-      case R.id.menu_load_from_local:
-         addImageFromLocal();
+      case R.id.menu_about:
+         Utils.showAbout(this);
          break;
-
-      case R.id.menu_load_from_camera:
-         addImageFromCamera();
-         break;
+      //
+      // case R.id.menu_load_from_camera:
+      // addImageFromCamera();
+      // break;
 
       case R.id.menu_gen_from_text:
          loadBrushes();
-         this.processTextImg();
+         processTextImg();
          break;
       default:
          break;

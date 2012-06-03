@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <item android:id="@+id/menu_load_from_local"
-        android:title="Load from local" />
+<!--     <item android:id="@+id/menu_load_from_local" -->
+<!--         android:title="Load from local"  -->
+<!--         /> -->
 
-    <item android:id="@+id/menu_load_from_camera"
-        android:title="Load from camera" />
+<!--     <item android:id="@+id/menu_load_from_camera" -->
+<!--         android:title="Load from camera" /> -->
+
+    <item android:id="@+id/menu_about"
+        android:title="About" />
     <item android:id="@+id/menu_gen_from_text"
         android:title="Gen from text" />
 
