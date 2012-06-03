@@ -10,8 +10,6 @@ package com.howfun.canvasfill;
 /**
  * 2012.6.2
  * Output size = raw size / cell size * brush size;
- * TODO: New mode: Imitate desired chars with custom chars.
- * TODO: Click generated pic to open.
  */
 
 import android.app.Activity;
@@ -123,12 +121,6 @@ public class CanvasFillActivity extends Activity {
          customText = "T";
       mTextBrushes = customText.toCharArray();
 
-      for (int i = 0; i < mTextBrushes.length; i++) {
-         char tempStr = mTextBrushes[i];
-         Utils.log(LOG_TAG, "temp str: " + tempStr);
-
-      }
-
    }
 
    private void processTextImg() {
@@ -209,8 +201,9 @@ public class CanvasFillActivity extends Activity {
             for (int j = 0; j < outW; j++) {
 
                int curBrush = meanArray[i][j];
-               if (curBrush != 5) {
-                  curBrush %= mTextBrushes.length;
+               if (curBrush != mTextBrushes.length - 1) {
+                  //curBrush %= mTextBrushes.length;
+                  curBrush = getNextBrush();
                   canvas.drawText(String.valueOf(mTextBrushes[curBrush]),
                         BRUSH_W * j, BRUSH_H * i, paint);
                }
@@ -223,6 +216,11 @@ public class CanvasFillActivity extends Activity {
       // Save to file
       Utils.saveBitmapToFile(bitmap, OUTPUT_FILE);
 
+   }
+
+   static int brushId= 0;
+   private int getNextBrush() {
+      return brushId++%mTextBrushes.length; 
    }
 
    private int[][] GenFillArray(Bitmap bitmap) {
@@ -254,20 +252,32 @@ public class CanvasFillActivity extends Activity {
    }
 
    private int getBrushIndex(int x) {
-      if (0 <= x && x <= 41)
-         return 0;
-      if (41 < x && x <= 83)
-         return 1;
-      if (83 < x && x <= 124)
-         return 2;
-      if (124 < x && x <= 165)
-         return 3;
-      if (165 < x && x <= 206)
-         return 4;
-      if (206 < x && x <= 247)
-         return 5;
-      else
-         return 5;
+      final int MAX_GRAY = 255;
+      final int brushNum = mTextBrushes.length;
+      
+      final int sectionLen = MAX_GRAY / brushNum;
+      
+      for (int i=0; i<brushNum;i++) {
+         if (x < i * sectionLen) {
+            return i;
+         }
+      }
+      return brushNum - 1;
+   
+//      if (0 <= x && x <= 41)
+//         return 0;
+//      if (41 < x && x <= 83)
+//         return 1;
+//      if (83 < x && x <= 124)
+//         return 2;
+//      if (124 < x && x <= 165)
+//         return 3;
+//      if (165 < x && x <= 206)
+//         return 4;
+//      if (206 < x && x <= 247)
+//         return 5;
+//      else
+//         return 5;
    }
 
    private void GetGrays(int[] pixels) {
