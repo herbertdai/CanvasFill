@@ -52,7 +52,7 @@ public class CanvasFillActivity extends Activity {
    private static final int REQUEST_IMG_PATH_FROM_LOCAL = 0x10;
    private static final String TEMP_FILE = Utils.ROOT + "tempCamera.jpg";
    private static final String OUTPUT_FILE = Utils.ROOT + "adaiFill.png";
-   private static final int MAX_BRUSH_INDEX = 5;
+   private static final int MAX_BRUSH_INDEX = 6;
 
    private Bitmap mCanvasBitmap;
    private int outW;
@@ -204,9 +204,7 @@ public class CanvasFillActivity extends Activity {
             for (int j = 0; j < outW; j++) {
 
                int curBrush = meanArray[i][j];
-               // if (curBrush != mTextBrushes.length - 1) {
                if (curBrush != MAX_BRUSH_INDEX) {
-                  // curBrush %= mTextBrushes.length;
                   canvas.drawText(String.valueOf(mTextBrushes[getNextBrush()]),
                         BRUSH_W * j, BRUSH_H * i, paint);
                }
@@ -282,7 +280,7 @@ public class CanvasFillActivity extends Activity {
       if (165 < x && x <= 206)
          return 4;
       if (206 < x && x <= 247)
-         return MAX_BRUSH_INDEX;
+         return 5;
       else
          return MAX_BRUSH_INDEX;
    }
