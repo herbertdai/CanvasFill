@@ -52,6 +52,7 @@ public class CanvasFillActivity extends Activity {
    private static final int REQUEST_IMG_PATH_FROM_LOCAL = 0x10;
    private static final String TEMP_FILE = Utils.ROOT + "tempCamera.jpg";
    private static final String OUTPUT_FILE = Utils.ROOT + "adaiFill.png";
+   private static final int MAX_BRUSH_INDEX = 5;
 
    private Bitmap mCanvasBitmap;
    private int outW;
@@ -118,7 +119,9 @@ public class CanvasFillActivity extends Activity {
       /** get brush from text */
       String customText = mBrushText.getText().toString();
       if (customText == null || customText.equals(""))
-         customText = "T";
+         customText = "TT";
+      else
+         customText += "."; // Add last white brush.
       mTextBrushes = customText.toCharArray();
 
    }
@@ -148,8 +151,8 @@ public class CanvasFillActivity extends Activity {
       inputW = bitmap.getWidth();
       inputH = bitmap.getHeight();
 
-      outW = bitmap.getWidth() / CELL_W + 1;
-      outH = bitmap.getHeight() / CELL_H + 1;
+      outW = inputW / CELL_W + 1;
+      outH = inputH / CELL_H + 1;
       Log.e(LOG_TAG, "outw outH = " + outW + ", " + outH);
 
       int[][] meanArray = GenFillArray(bitmap);
@@ -201,10 +204,10 @@ public class CanvasFillActivity extends Activity {
             for (int j = 0; j < outW; j++) {
 
                int curBrush = meanArray[i][j];
-               if (curBrush != mTextBrushes.length - 1) {
-                  //curBrush %= mTextBrushes.length;
-                  curBrush = getNextBrush();
-                  canvas.drawText(String.valueOf(mTextBrushes[curBrush]),
+               // if (curBrush != mTextBrushes.length - 1) {
+               if (curBrush != MAX_BRUSH_INDEX) {
+                  // curBrush %= mTextBrushes.length;
+                  canvas.drawText(String.valueOf(mTextBrushes[getNextBrush()]),
                         BRUSH_W * j, BRUSH_H * i, paint);
                }
             }
@@ -218,9 +221,12 @@ public class CanvasFillActivity extends Activity {
 
    }
 
-   static int brushId= 0;
+   static int brushId = 0;
+
    private int getNextBrush() {
-      return brushId++%mTextBrushes.length; 
+
+      final int totalBrushLen = (mTextBrushes.length - 1);
+      return brushId++ % totalBrushLen;
    }
 
    private int[][] GenFillArray(Bitmap bitmap) {
@@ -252,32 +258,33 @@ public class CanvasFillActivity extends Activity {
    }
 
    private int getBrushIndex(int x) {
-      final int MAX_GRAY = 255;
-      final int brushNum = mTextBrushes.length;
-      
-      final int sectionLen = MAX_GRAY / brushNum;
-      
-      for (int i=0; i<brushNum;i++) {
-         if (x < i * sectionLen) {
-            return i;
-         }
-      }
-      return brushNum - 1;
-   
-//      if (0 <= x && x <= 41)
-//         return 0;
-//      if (41 < x && x <= 83)
-//         return 1;
-//      if (83 < x && x <= 124)
-//         return 2;
-//      if (124 < x && x <= 165)
-//         return 3;
-//      if (165 < x && x <= 206)
-//         return 4;
-//      if (206 < x && x <= 247)
-//         return 5;
-//      else
-//         return 5;
+      // final int MAX_GRAY = 255;
+      // final int brushNum = mTextBrushes.length;
+      //
+      // final int sectionLen = MAX_GRAY / brushNum;
+      //
+      // for (int i = 0; i < brushNum; i++) {
+      // if (x < (i + 1) * sectionLen) {
+      //
+      // return i;
+      // }
+      // }
+      // return brushNum - 1;
+
+      if (0 <= x && x <= 41)
+         return 0;
+      if (41 < x && x <= 83)
+         return 1;
+      if (83 < x && x <= 124)
+         return 2;
+      if (124 < x && x <= 165)
+         return 3;
+      if (165 < x && x <= 206)
+         return 4;
+      if (206 < x && x <= 247)
+         return MAX_BRUSH_INDEX;
+      else
+         return MAX_BRUSH_INDEX;
    }
 
    private void GetGrays(int[] pixels) {
@@ -326,7 +333,7 @@ public class CanvasFillActivity extends Activity {
          mOutputBitmap = null;
       }
 
-      // Utils.deleteFile(TEMP_FILE);
+      Utils.deleteFile(TEMP_FILE);
    }
 
    private void addImageFromLocal() {

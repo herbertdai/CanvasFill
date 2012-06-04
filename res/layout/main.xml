@@ -10,32 +10,24 @@
         android:layout_height="wrap_content"
         android:background="@drawable/white"
         android:hint="Input text to be filled here"
+        android:maxLines="3"
         android:text="I love U forever"
         android:textColor="#000"
-        android:textSize="60sp" 
-        android:maxLines="5"/>
+        android:textSize="70sp" />
 
-    <LinearLayout
+    <EditText
+        android:id="@+id/brush_text"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:gravity="right" >
+        android:layout_marginTop="3dp"
+        android:hint="Input brush, max 140 chars"
+        android:maxLength="140" />
 
-        <EditText
-            android:id="@+id/brush_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="3dp"
-            android:layout_weight="1"
-            android:hint="Input brush, max 10 chars"
-            android:maxLength="10" />
-
-        <Button
-            android:id="@+id/gen_btn"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Generate" />
-    </LinearLayout>
+    <Button
+        android:id="@+id/gen_btn"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:text="Generate" />
 
     <ImageView
         android:id="@+id/out_img"
