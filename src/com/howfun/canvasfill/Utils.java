@@ -7,8 +7,10 @@ import java.io.IOException;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.os.Build;
 import android.util.Log;
 import android.view.View;
 
@@ -111,9 +113,15 @@ public class Utils {
    }
    
    public static void showAbout(Context context) {
+      String versionName = "";
+      try {
+         versionName = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+      } catch (NameNotFoundException e) {
+         // TODO Auto-generated catch block
+         e.printStackTrace();
+      }
       new AlertDialog.Builder(context).setIcon(R.drawable.ic_launcher).setTitle(
-            R.string.app_name).setMessage(
-            context.getResources().getString(R.string.version) + "\n"
+            R.string.app_name).setMessage( versionName + "\n"
                   + context.getResources().getString(R.string.howfun)).show()
             .setCanceledOnTouchOutside(true);
    }
